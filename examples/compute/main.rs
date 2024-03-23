@@ -1,3 +1,7 @@
+#![allow(unused_crate_dependencies)]
+#![allow(clippy::similar_names)]
+
+#[allow(clippy::wildcard_imports)]
 use metal::*;
 use objc::rc::autoreleasepool;
 use std::path::PathBuf;
@@ -7,8 +11,7 @@ const NUM_SAMPLES: u64 = 2;
 fn main() {
     let num_elements = std::env::args()
         .nth(1)
-        .map(|s| s.parse::<u32>().unwrap())
-        .unwrap_or(64 * 64);
+        .map_or(64 * 64, |s| s.parse::<u32>().unwrap());
 
     autoreleasepool(|| {
         let device = Device::system_default().expect("No device found");
@@ -17,6 +20,7 @@ fn main() {
         device.sample_timestamps(&mut cpu_start, &mut gpu_start);
 
         let counter_sample_buffer = create_counter_sample_buffer(&device);
+        #[allow(clippy::cast_possible_truncation)]
         let destination_buffer = device.new_buffer(
             (std::mem::size_of::<u64>() * NUM_SAMPLES as usize) as u64,
             MTLResourceOptions::StorageModeShared,
@@ -68,7 +72,7 @@ fn main() {
         let mut gpu_end = 0;
         device.sample_timestamps(&mut cpu_end, &mut gpu_end);
 
-        let ptr = sum.contents() as *mut u32;
+        let ptr = sum.contents().cast::<u32>();
         println!("Compute shader sum: {}", unsafe { *ptr });
 
         unsafe {
@@ -131,6 +135,7 @@ fn handle_timestamps(
     gpu_start: u64,
     gpu_end: u64,
 ) {
+    #[allow(clippy::cast_possible_truncation)]
     let samples = unsafe {
         std::slice::from_raw_parts(
             resolved_sample_buffer.contents() as *const u64,
@@ -144,7 +149,7 @@ fn handle_timestamps(
     let gpu_time_span = gpu_end - gpu_start;
 
     let micros = microseconds_between_begin(pass_start, pass_end, gpu_time_span, cpu_time_span);
-    println!("Compute pass duration: {} µs", micros);
+    println!("Compute pass duration: {micros} µs");
 }
 
 fn create_counter_sample_buffer(device: &Device) -> CounterSampleBuffer {
@@ -170,7 +175,7 @@ fn create_input_and_output_buffers(
     let data = vec![1u32; num_elements as usize];
 
     let buffer = device.new_buffer_with_data(
-        unsafe { std::mem::transmute(data.as_ptr()) },
+        data.as_ptr().cast::<std::ffi::c_void>(),
         (data.len() * std::mem::size_of::<u32>()) as u64,
         MTLResourceOptions::CPUCacheModeDefaultCache,
     );
@@ -178,7 +183,7 @@ fn create_input_and_output_buffers(
     let sum = {
         let data = [0u32];
         device.new_buffer_with_data(
-            unsafe { std::mem::transmute(data.as_ptr()) },
+            data.as_ptr().cast::<std::ffi::c_void>(),
             (data.len() * std::mem::size_of::<u32>()) as u64,
             MTLResourceOptions::CPUCacheModeDefaultCache,
         )
@@ -187,6 +192,7 @@ fn create_input_and_output_buffers(
 }
 
 /// <https://developer.apple.com/documentation/metal/gpu_counters_and_counter_sample_buffers/converting_gpu_timestamps_into_cpu_time>
+#[allow(clippy::cast_precision_loss)]
 fn microseconds_between_begin(begin: u64, end: u64, gpu_time_span: u64, cpu_time_span: u64) -> f64 {
     let time_span = (end as f64) - (begin as f64);
     let nanoseconds = time_span / (gpu_time_span as f64) * (cpu_time_span as f64);

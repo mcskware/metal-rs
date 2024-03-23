@@ -16,32 +16,31 @@ fn compile_shaders() {
     println!("cargo:rerun-if-changed=shader_types.h");
 
     let output = Command::new("xcrun")
-        .arg("--sdk")
-        .arg("macosx14.4")
+        .arg("-sdk")
+        .arg("macosx")
         .arg("metal")
-        .args(&["-c", "shaders.metal"])
-        .args(&["-o", "shaders.air"])
+        .args(["-c", "shaders.metal"])
+        .args(["-o", "shaders.air"])
         .spawn()
         .unwrap()
         .wait_with_output()
         .unwrap();
-    if !output.status.success() {
-        panic!(
-            r#"
+    assert!(
+        output.status.success(),
+        r#"
 stdout: {}
 stderr: {}
 "#,
-            String::from_utf8(output.stdout).unwrap(),
-            String::from_utf8(output.stderr).unwrap()
-        );
-    }
+        String::from_utf8(output.stdout).unwrap(),
+        String::from_utf8(output.stderr).unwrap()
+    );
 
     Command::new("xcrun")
         .arg("-sdk")
         .arg("macosx")
         .arg("metallib")
         .arg("shaders.air")
-        .args(&["-o", "shaders.metallib"])
+        .args(["-o", "shaders.metallib"])
         .spawn()
         .unwrap()
         .wait()
@@ -102,7 +101,7 @@ fn read_cached_shader_types_hash() -> Option<u64> {
 }
 
 fn save_shader_types_hash(hash: u64) {
-    std::fs::write(shader_types_hash_file(), format!("{}", hash)).unwrap();
+    std::fs::write(shader_types_hash_file(), format!("{hash}")).unwrap();
 }
 
 fn shader_types_hash_file() -> PathBuf {

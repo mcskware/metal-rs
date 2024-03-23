@@ -1,3 +1,5 @@
+#![allow(unused_crate_dependencies)]
+
 // Copyright 2017 GFX developers
 //
 // Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
@@ -5,6 +7,7 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+#[allow(clippy::wildcard_imports)]
 use metal::*;
 use objc::rc::autoreleasepool;
 use std::mem;
@@ -22,7 +25,7 @@ fn main() {
         ];
 
         let buffer = device.new_buffer_with_data(
-            unsafe { mem::transmute(data.as_ptr()) },
+            data.as_ptr().cast::<std::ffi::c_void>(),
             (data.len() * mem::size_of::<u32>()) as u64,
             MTLResourceOptions::CPUCacheModeDefaultCache,
         );
@@ -30,7 +33,7 @@ fn main() {
         let sum = {
             let data = [0u32];
             device.new_buffer_with_data(
-                unsafe { mem::transmute(data.as_ptr()) },
+                data.as_ptr().cast::<std::ffi::c_void>(),
                 (data.len() * mem::size_of::<u32>()) as u64,
                 MTLResourceOptions::CPUCacheModeDefaultCache,
             )
@@ -87,7 +90,7 @@ fn main() {
         command_buffer.commit();
         command_buffer.wait_until_completed();
 
-        let ptr = sum.contents() as *mut u32;
+        let ptr = sum.contents().cast::<u32>();
         unsafe {
             assert_eq!(465, *ptr);
         }
