@@ -16,8 +16,8 @@ fn compile_shaders() {
     println!("cargo:rerun-if-changed=shader_types.h");
 
     let output = Command::new("xcrun")
-        .arg("-sdk")
-        .arg("macosx")
+        .arg("--sdk")
+        .arg("macosx14.4")
         .arg("metal")
         .args(&["-c", "shaders.metal"])
         .args(&["-o", "shaders.air"])
