@@ -48,7 +48,7 @@ stderr: {}
 }
 
 fn generate_rust_types_from_shader_types() {
-    println!("cargo:rerun-if-changed=shader_types");
+    //println!("cargo:rerun-if-changed=shader_types");
 
     let current_hash = hash_shader_types();
 

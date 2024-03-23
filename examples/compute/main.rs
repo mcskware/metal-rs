@@ -50,7 +50,7 @@ fn main() {
         let num_threads = pipeline_state.thread_execution_width();
 
         let thread_group_count = MTLSize {
-            width: ((num_elements as NSUInteger + num_threads) / num_threads),
+            width: ((num_elements as NSUInteger + num_threads - 1) / num_threads),
             height: 1,
             depth: 1,
         };

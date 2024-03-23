@@ -49,6 +49,7 @@ fn main() {
         MTLResourceOptions::CPUCacheModeDefaultCache | MTLResourceOptions::StorageModeManaged,
     );
     let viewport_size = (window.inner_size().width, window.inner_size().height);
+    println!("viewport size = {:?}", viewport_size);
     update_viewport_size_buffer(&viewport_size_buffer, viewport_size);
 
     let texture_to_render = create_texture_to_display(&device);
@@ -168,6 +169,11 @@ fn get_window_layer(window: &Window, device: &Device) -> MetalLayer {
     // https://developer.apple.com/documentation/quartzcore/cametallayer/1478157-presentswithtransaction
     layer.set_presents_with_transaction(false);
 
+    println!(
+        "window inner size = ({}, {})",
+        window.inner_size().width as f64,
+        window.inner_size().height as f64,
+    );
     layer.set_drawable_size(CGSize::new(
         window.inner_size().width as f64,
         window.inner_size().height as f64,
@@ -215,9 +221,13 @@ fn handle_window_event(
     match event {
         WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
         WindowEvent::Resized(size) => {
-            layer.set_drawable_size(CGSize::new(size.width as f64, size.height as f64));
+            // MACOS Sonoma generates a spurios resized event as init with
+            // u32::MAX for both width and height -- ignore this
+            if size.width != u32::MAX && size.height != u32::MAX {
+                layer.set_drawable_size(CGSize::new(size.width as f64, size.height as f64));
 
-            update_viewport_size_buffer(viewport_size_buffer, (size.width, size.height));
+                update_viewport_size_buffer(viewport_size_buffer, (size.width, size.height));
+            }
         }
         _ => {}
     }

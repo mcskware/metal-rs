@@ -10,16 +10,19 @@
 // /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/simd
 #include <simd/vector_types.h>
 
-typedef enum VertexInputIndex {
+typedef enum VertexInputIndex
+{
     VertexInputIndexVertices = 0,
     VertexInputIndexViewportSize = 1,
 } VertexInputIndex;
 
-typedef enum TextureIndex {
+typedef enum TextureIndex
+{
     TextureIndexBaseColor = 0
 } TextureIndex;
 
-typedef struct {
+typedef struct
+{
     // (0, 0) is the center of the screen
     // (-viewport_size / 2, 0) is the middle of the furthest left column of screen pixels.
     // (0, viewport_size / 2) is the middle of the furthest top row of screen pixels.

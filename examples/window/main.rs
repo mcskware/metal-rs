@@ -84,6 +84,7 @@ fn prepare_render_pass_descriptor(descriptor: &RenderPassDescriptorRef, texture:
     color_attachment.set_store_action(MTLStoreAction::Store);
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let events_loop = winit::event_loop::EventLoop::new();
     let size = winit::dpi::LogicalSize::new(800, 600);
@@ -197,11 +198,7 @@ fn main() {
                     ];
 
                     unsafe {
-                        std::ptr::copy(
-                            vertex_data.as_ptr(),
-                            p as *mut f32,
-                            (vertex_data.len() * mem::size_of::<f32>()) as usize,
-                        );
+                        std::ptr::copy(vertex_data.as_ptr(), p.cast::<f32>(), vertex_data.len());
                     }
 
                     vbuf.did_modify_range(crate::NSRange::new(
